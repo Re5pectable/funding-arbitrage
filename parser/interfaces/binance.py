@@ -23,6 +23,9 @@ class FundingRate:
 
 @retry(catch_exceptions=(TransportError,))
 async def get_funding_rate() -> list[FundingRate]:
+    """
+    https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Get-Funding-Rate-Info
+    """
     endpoint = FBASE_URL +  "/fapi/v1/premiumIndex"
     async with AsyncClient() as c:
         response = await c.get(endpoint)
