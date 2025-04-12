@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from time import time
 
 from httpx import AsyncClient, TransportError
 
