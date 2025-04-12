@@ -1,4 +1,4 @@
-httpx[socks]
+httpx
 alembic
 asyncpg
 pydantic==2.7.2
