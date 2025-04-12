@@ -1,2 +1,4 @@
+from .interfaces import okx
+
 async def main():
-    pass
+    print(await okx.get_funding_rate())
