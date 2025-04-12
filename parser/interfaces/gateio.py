@@ -17,6 +17,7 @@ class FundingRate:
 
 BASE_URL = "https://api.gateio.ws"
 
+
 @retry(catch_exceptions=(TransportError,))
 async def get_funding_rate():
     """
@@ -36,3 +37,13 @@ async def get_funding_rate():
             )
             for row in response.json()
         ]
+
+
+async def get_orderbook(symbol: str):
+    return {
+        "id": 123456,
+        "current": 1623898993.123,
+        "update": 1623898993.121,
+        "asks": [{"p": "1.52", "s": 100}, {"p": "1.53", "s": 40}],
+        "bids": [{"p": "1.17", "s": 150}, {"p": "1.16", "s": 203}],
+    }

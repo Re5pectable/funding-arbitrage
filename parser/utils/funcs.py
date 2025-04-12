@@ -1,6 +1,8 @@
-from pandas import Series, DataFrame
 import re
 from decimal import Decimal
+from typing import Literal
+
+from pandas import DataFrame, Series
 
 SYMBOL_DECIMALS_PATTERN = re.compile(r"^(10+)(.*)$")
 
@@ -25,9 +27,49 @@ def find_diff(df: DataFrame, threshold: Decimal = Decimal("0.001")) -> DataFrame
         min_rate = min(rates)
         return (max_rate - min_rate) > threshold
 
-    symbols = (
-        df.groupby("id")
-        .filter(is_significantly_diff)
-    )
+    symbols = df.groupby("id").filter(is_significantly_diff)
 
     return symbols.sort_values("id")
+
+
+from typing import Literal
+
+
+def calculate_average_price_from_book(
+    bids: list[list[float]],
+    asks: list[list[float]],
+    amount: float,
+    side: Literal["buy", "sell"],
+) -> float:
+    """
+    Рассчитывает среднюю цену сделки из стакана.
+
+    :param bids: список [[price, qty], ...] — предложения на покупку
+    :param asks: список [[price, qty], ...] — предложения на продажу
+    :param amount: сколько base-токена нужно купить или продать
+    :param side: "buy" → покупка с asks, "sell" → продажа в bids
+    :return: средняя цена исполнения
+    """
+    orderbook = asks if side == "buy" else bids
+    reverse = side == "sell"  # bids нужно сортировать убыв.
+    book = sorted(orderbook, key=lambda x: Decimal(str(x[0])), reverse=reverse)
+
+    remaining = Decimal(str(amount))
+    total_cost = Decimal("0")
+
+    for price_str, qty_str in book:
+        price = Decimal(str(price_str))
+        qty = Decimal(str(qty_str))
+
+        if remaining <= qty:
+            total_cost += remaining * price
+            break
+        else:
+            total_cost += qty * price
+            remaining -= qty
+
+    if remaining > 0:
+        raise ValueError("Not enough liquidity to fulfill the order")
+
+    average_price = total_cost / Decimal(str(amount))
+    return float(average_price)
