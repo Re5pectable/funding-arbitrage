@@ -10,9 +10,9 @@ from ..utils import retry
 @dataclass
 class FundingRate:
     symbol: str
-    fundingRate: str
-    nextFundingTime: str
-    lastPrice: str
+    fundingRate: Decimal
+    nextFundingTime: datetime
+    lastPrice: Decimal
 
 
 BASE_URL = "https://api.bybit.com"
