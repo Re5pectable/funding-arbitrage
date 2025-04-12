@@ -31,7 +31,7 @@ async def get_funding_rate() -> list[FundingRate]:
         response = await c.get(endpoint)
         if response.status_code != 200:
             raise ValueError(response.text)
-        [
+        return [
             FundingRate(
                 symbol=row["symbol"],
                 markPrice=Decimal(row["markPrice"]),
