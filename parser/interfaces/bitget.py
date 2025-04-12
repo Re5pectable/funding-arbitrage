@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from datetime import datetime
 
 from httpx import AsyncClient, TransportError
 
@@ -35,3 +36,18 @@ async def get_funding_rate():
             )
             for row in response.json()["data"]
         ]
+
+async def get_next_funding_time(symbol: str):
+    """
+    https://www.bitget.com/api-doc/contract/market/Get-Symbol-Next-Funding-Time
+    """
+    params = {"productType": "USDT-FUTURES", "symbol": symbol}
+    endpoint = BASE_URL + "/api/v2/mix/market/funding-time"
+    async with AsyncClient() as c:
+        response = await c.get(endpoint, params=params)
+        if response.status_code != 200:
+            raise ValueError(response.text)
+        nft = response.json()["data"][0]["nextFundingTime"]
+        return datetime.fromtimestamp(int(nft) / 1000)
+        
+    
