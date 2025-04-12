@@ -1,43 +1,49 @@
-from .interfaces import okx, bybit, bitget, binance, gateio
-from decimal import Decimal
-import pandas as pd
 from dataclasses import asdict
-from .utils import fix_decimals_in_symbols
+
+import pandas as pd
+
+from .interfaces import binance, bitget, bybit, gateio, okx
+from .utils import fix_decimals_in_symbols, find_diff
 
 
 async def _gather_binance():
     data = await binance.get_funding_rate()
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
-    df.set_index("symbol", inplace=True)
-    return df[["lastPrice", "fundingRate", "nextFundingTime"]]
+    df["id"] = df["symbol"]
+    return df[["id", "lastPrice", "fundingRate", "nextFundingTime", "symbol"]]
 
 
 async def _gather_bybit():
     data = await bybit.get_funding_rate()
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
-    return df.set_index("symbol")
+    df["id"] = df["symbol"]
+    return df
 
 
 async def _gather_gateio():
     data = await gateio.get_funding_rate()
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
-    df["symbol"] = df["symbol"].str[:-5] + df["symbol"].str[-4:]
-    return df.set_index("symbol")
+    df["id"] = df["symbol"].str[:-5] + df["symbol"].str[-4:]
+    return df
 
 
 async def main():
     df = pd.DataFrame()
+    columns = ["id", "exchange", "fundingRate", "lastPrice", "nextFundingTime", "symbol"]
     
-    for prefix, func in [
-        ("binance_", _gather_binance),
-        ("bybit_", _gather_bybit),
-        ("gateio_", _gather_gateio),
+    for exchange_name, func in [
+        ("binance", _gather_binance),
+        ("bybit", _gather_bybit),
+        ("gateio", _gather_gateio),
     ]:
         data = await func()
-        data = data[sorted(data.columns)].add_prefix(prefix)
-        df = pd.concat((df, data), axis=1)
-
-    print(df)
+        data["exchange"] = exchange_name
+        df = pd.concat((df, data), axis=0)
+    
+    df = df.reset_index()
+    df = df[columns]
+    
+    print(find_diff(df))
