@@ -3,3 +3,4 @@ alembic
 asyncpg
 pydantic==2.7.2
 sqlalchemy[asyncio]
+pandas

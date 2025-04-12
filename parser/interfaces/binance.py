@@ -12,13 +12,12 @@ FBASE_URL = "https://fapi.binance.com"
 @dataclass
 class FundingRate:
     symbol: str
-    markPrice: Decimal
+    lastPrice: Decimal
     indexPrice: Decimal
     estimatedSettlePrice: Decimal
     lastFundingRate: Decimal
-    interestRate: Decimal
+    fundingRate: Decimal
     nextFundingTime: datetime
-    time: datetime
 
 
 @retry(catch_exceptions=(TransportError,))
@@ -34,13 +33,12 @@ async def get_funding_rate() -> list[FundingRate]:
         return [
             FundingRate(
                 symbol=row["symbol"],
-                markPrice=Decimal(row["markPrice"]),
+                lastPrice=Decimal(row["markPrice"]),
                 indexPrice=Decimal(row["indexPrice"]),
                 estimatedSettlePrice=Decimal(row["estimatedSettlePrice"]),
                 lastFundingRate=Decimal(row["lastFundingRate"]),
-                interestRate=Decimal(row["interestRate"]),
+                fundingRate=Decimal(row["interestRate"]),
                 nextFundingTime=datetime.fromtimestamp(row["nextFundingTime"] / 1000),
-                time=datetime.fromtimestamp(row["time"] / 1000),
             )
             for row in response.json()
         ]
