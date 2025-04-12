@@ -1,5 +1,5 @@
-from .interfaces import okx, bybit
+from .interfaces import okx, bybit, bitget
 from pprint import pprint
 
 async def main():
-    pprint(await bybit.get_funding_rate())
+    pprint(await bitget.get_funding_rate())
