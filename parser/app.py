@@ -4,10 +4,11 @@ import pandas as pd
 
 from .interfaces import binance, bitget, bybit, gateio, okx
 from .utils import fix_decimals_in_symbols, find_diff
-
+from . import test_data
 
 async def _gather_binance():
-    data = await binance.get_funding_rate()
+    # data = await binance.get_funding_rate()
+    data = test_data.BINANCE_FUNDRATE
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
     df["id"] = df["symbol"]
@@ -15,7 +16,8 @@ async def _gather_binance():
 
 
 async def _gather_bybit():
-    data = await bybit.get_funding_rate()
+    # data = await bybit.get_funding_rate()
+    data = test_data.BYBIT_FUNDRATE
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
     df["id"] = df["symbol"]
@@ -23,7 +25,8 @@ async def _gather_bybit():
 
 
 async def _gather_gateio():
-    data = await gateio.get_funding_rate()
+    # data = await gateio.get_funding_rate()
+    data = test_data.GATEIO_FUNDRATE
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
     df["id"] = df["symbol"].str[:-5] + df["symbol"].str[-4:]

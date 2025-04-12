@@ -20,6 +20,7 @@ def fix_decimals_in_symbols(row: Series):
 
 def find_diff(df: DataFrame, threshold: Decimal = Decimal("0.001")) -> DataFrame:
     def is_significantly_diff(gr):
+        print(gr)
         rates = gr["fundingRate"].dropna()
         if len(rates) < 2:
             return False
@@ -32,26 +33,14 @@ def find_diff(df: DataFrame, threshold: Decimal = Decimal("0.001")) -> DataFrame
     return symbols.sort_values("id")
 
 
-from typing import Literal
-
-
 def calculate_average_price_from_book(
     bids: list[list[float]],
     asks: list[list[float]],
     amount: float,
     side: Literal["buy", "sell"],
 ) -> float:
-    """
-    Рассчитывает среднюю цену сделки из стакана.
-
-    :param bids: список [[price, qty], ...] — предложения на покупку
-    :param asks: список [[price, qty], ...] — предложения на продажу
-    :param amount: сколько base-токена нужно купить или продать
-    :param side: "buy" → покупка с asks, "sell" → продажа в bids
-    :return: средняя цена исполнения
-    """
     orderbook = asks if side == "buy" else bids
-    reverse = side == "sell"  # bids нужно сортировать убыв.
+    reverse = side == "sell"
     book = sorted(orderbook, key=lambda x: Decimal(str(x[0])), reverse=reverse)
 
     remaining = Decimal(str(amount))
