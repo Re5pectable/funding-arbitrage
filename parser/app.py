@@ -27,6 +27,12 @@ async def _gather_binance(mock=False):
     df["id"] = df["symbol"]
     return df[["id", "lastPrice", "fundingRate", "nextFundingTime", "symbol"]]
 
+async def _gather_bingx():
+    data = await bingx.get_funding_rate()
+    df = pd.DataFrame([asdict(row) for row in data])
+    df = df.apply(fix_decimals_in_symbols, axis=1)
+    df["id"] = df["symbol"].str[:-5] + df["symbol"].str[-4:]
+    return df
 
 async def _gather_bybit(mock=False):
     data = await bybit.get_funding_rate() if not mock else test_data.BYBIT_FUNDRATE
