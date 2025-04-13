@@ -25,7 +25,7 @@ async def get_funding_rate() -> list[FundingRate]:
     """
     https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Get-Funding-Rate-Info
     """
-    endpoint = FBASE_URL +  "/fapi/v1/premiumIndex"
+    endpoint = FBASE_URL + "/fapi/v1/premiumIndex"
     async with AsyncClient() as c:
         response = await c.get(endpoint)
         if response.status_code != 200:
@@ -42,3 +42,16 @@ async def get_funding_rate() -> list[FundingRate]:
             )
             for row in response.json()
         ]
+
+
+async def get_order_book(symbol: str):
+    """
+    https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Order-Book
+    """
+    return {
+        "lastUpdateId": 1027024,
+        "E": 1589436922972,
+        "T": 1589436922959,
+        "bids": [["4.00000000", "431.00000000"]],
+        "asks": [["4.00000200", "12.00000000"]],
+    }

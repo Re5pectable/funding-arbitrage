@@ -4,6 +4,8 @@ from . import bybit
 from . import bitget
 from . import gateio
 from . import bingx
+from . import kraken
+from . import kucoin
 
 __all__ = [
     "binance",
@@ -11,5 +13,7 @@ __all__ = [
     "bybit",
     "bitget",
     "gateio",
-    "bingx"
+    "bingx",
+    "kraken",
+    "kucoin"
 ]
