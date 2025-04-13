@@ -1,7 +1,6 @@
 from dataclasses import asdict
 
 import pandas as pd
-pd.set_option("display.max_rows", None)
 from .interfaces import binance, bitget, bybit, gateio, okx, bingx
 from .utils import fix_decimals_in_symbols, find_diff
 
