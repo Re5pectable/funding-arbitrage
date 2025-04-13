@@ -37,7 +37,7 @@ async def main():
     for exchange_name, func in [
         ("binance", _gather_binance),
         ("bybit", _gather_bybit),
-        ("gateio", _gather_gateio),
+        ("gateio", _gather_gateio)
     ]:
         data = await func()
         data["exchange"] = exchange_name
