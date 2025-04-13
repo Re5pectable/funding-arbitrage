@@ -56,6 +56,7 @@ async def main():
     df = pd.DataFrame()
     columns = [
         "id",
+        "index",
         "exchange",
         "fundingRate",
         "lastPrice",
@@ -76,10 +77,14 @@ async def main():
         [result.assign(exchange=name) for (name, _), result in zip(gather_tasks, results)],
         axis=0,
         ignore_index=True
-    )
+    ).reset_index()
 
-    df = df.reset_index()
     df = df[columns]
 
-    r = find_diff(df, threshold=Decimal("0.00001"), max_hours_diff=10)
-    pprint(r)
+    r = find_diff(df, threshold=Decimal("0.001"), max_hours_diff=2)
+    print(r)
+    print(df)
+    indexes = r[["index_a", "index_b"]].values.ravel()
+    print(df[df.index.isin(indexes)])
+    
+    
