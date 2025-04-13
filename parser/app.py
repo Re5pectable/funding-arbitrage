@@ -1,10 +1,13 @@
 from dataclasses import asdict
+from pprint import pprint
 
 import pandas as pd
 
+from . import settings  # noqa: F401
 from .interfaces import binance, bitget, bybit, gateio, okx
-from .utils import fix_decimals_in_symbols, find_diff
-from . import test_data
+from .test_data import test_data
+from .utils import find_diff, fix_decimals_in_symbols
+
 
 async def _gather_binance():
     # data = await binance.get_funding_rate()
@@ -49,4 +52,5 @@ async def main():
     df = df.reset_index()
     df = df[columns]
     
-    print(find_diff(df))
+    r = find_diff(df, max_hours_diff=2)
+    pprint(r)

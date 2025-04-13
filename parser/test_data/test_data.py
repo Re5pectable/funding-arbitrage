@@ -2,17 +2,12 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from random import randint, uniform
 
-from . import settings  # noqa: F401
-from .interfaces import binance, bybit, gateio
+from .. import settings  # noqa: F401
+from ..interfaces import binance, bybit, gateio
+import json
 
 symbols = {
-    "BTCUSDT": 81000,
-    "ETHUSDT": 2000,
-    "BNBUSDT": 300,
-    "AVAXUSDT": 3,
-    "TRXUSDT": 2,
-    "SOLUSDT": 600,
-    "DOGEUSDT": 15,
+    row["symbol"]: float(row["price"]) for row in json.load(open("./parser/test_data/data.json", "r"))
 }
 now = datetime.now().replace(microsecond=0, second=0, minute=0)
 
