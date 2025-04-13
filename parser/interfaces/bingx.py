@@ -27,7 +27,6 @@ async def get_funding_rate():
         response = await c.get(endpoint)
         if response.status_code != 200:
             raise ValueError(response.text)
-        # parsed = response.json()["data"]
         return [
             FundingRate(
                 symbol=row["symbol"],
@@ -37,6 +36,4 @@ async def get_funding_rate():
             )
             for row in response.json()["data"]
         ]
-        # return [
-        #     response.json()
-        # ]
+    
