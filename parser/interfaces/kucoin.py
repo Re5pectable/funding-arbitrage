@@ -61,9 +61,10 @@ async def get_orderbook(symbol: str):
     """
     response = await _request("GET", "/api/v1/level2/depth100", {"symbol": symbol})
     data = response.json()["data"]
+    
     return OrderBook(
-        bids=[Order(Decimal(price), Decimal(size)) for price, size in data["bids"]],
-        asks=[Order(Decimal(price), Decimal(size)) for price, size in data["asks"]],
+        bids=[Order(Decimal(str(price)), Decimal(str(size))) for price, size in data["bids"]],
+        asks=[Order(Decimal(str(price)), Decimal(str(size))) for price, size in data["asks"]],
     )
 
     
