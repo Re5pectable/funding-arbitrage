@@ -21,7 +21,6 @@ BINANCE_FUNDRATE = [
         lastPrice=get_random_decimal(price * 0.95, price * 1.05),
         indexPrice=get_random_decimal(price * 0.95, price * 1.05),
         estimatedSettlePrice=get_random_decimal(price * 0.95, price * 1.05),
-        lastFundingRate=get_random_decimal(-0.001, 0.001),
         fundingRate=get_random_decimal(-0.001, 0.001),
         nextFundingTime=now+timedelta(hours=randint(2, 5)),
     )

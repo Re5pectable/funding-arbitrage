@@ -81,9 +81,8 @@ async def main():
 
     df = df[columns]
 
-    r = find_diff(df, threshold=Decimal("0.001"), max_hours_diff=2)
+    r = find_diff(df, threshold=Decimal("0.005"), max_hours_diff=1)
     print(r)
-    print(df)
     indexes = r[["index_a", "index_b"]].values.ravel()
     print(df[df.index.isin(indexes)])
     
