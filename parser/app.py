@@ -15,6 +15,7 @@ from .interfaces import (  # noqa: F401
     kraken,
     kucoin,
     okx,
+    bingx
 )
 from .test_data import test_data
 from .utils import find_diff, fix_decimals_in_symbols
@@ -27,7 +28,7 @@ async def _gather_binance(mock=False):
     df["id"] = df["symbol"]
     return df[["id", "lastPrice", "fundingRate", "nextFundingTime", "symbol"]]
 
-async def _gather_bingx():
+async def _gather_bingx(mock):
     data = await bingx.get_funding_rate()
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
@@ -75,8 +76,9 @@ async def main():
         ("bybit", _gather_bybit),
         ("gateio", _gather_gateio),
         ("kucoin", _gather_kucoin),
+        ("bingx", _gather_bingx),
     ]
-
+    start = time.time()
     results = await asyncio.gather(*[func(mock=False) for _, func in gather_tasks])
 
     df = pd.concat(
@@ -88,6 +90,7 @@ async def main():
     df = df[columns]
 
     r = find_diff(df, threshold=Decimal("0.001"), max_hours_diff=2)
+    print(time.time()-start)
     print(r)
     print(df)
     indexes = r[["index_a", "index_b"]].values.ravel()

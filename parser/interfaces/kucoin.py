@@ -35,9 +35,9 @@ async def get_funding_rate():
             FundingRate(
                 symbol=row["baseCurrency"] + row["quoteCurrency"],
                 lastPrice=Decimal(str(row["markPrice"])),
-                fundingRate=Decimal(str(row["fundingFeeRate"])),
+                fundingRate=Decimal(str(row["predictedFundingFeeRate"])), # API: fundingFeeRate = last fr, predictedFundingFeeRate = next fr
                 nextFundingTime=datetime.fromtimestamp((row["nextFundingRateTime"] / 1000 + now)),
             )
             for row in response.json()["data"]
-            if row["fundingFeeRate"]
+            if row["predictedFundingFeeRate"]
         ]
