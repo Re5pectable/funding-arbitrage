@@ -19,7 +19,7 @@ class FundingRate:
 BASE_URL = "https://api-futures.kucoin.com"
 
 
-@retry(catch_exceptions=(TransportError,))
+@retry(catch=(TransportError,))
 async def get_funding_rate():
     """
     https://www.kucoin.com/docs-new/rest/futures-trading/market-data/get-all-symbols

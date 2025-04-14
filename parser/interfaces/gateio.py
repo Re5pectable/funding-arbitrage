@@ -18,7 +18,7 @@ class FundingRate:
 BASE_URL = "https://api.gateio.ws"
 
 
-@retry(catch_exceptions=(TransportError,))
+@retry(catch=(TransportError,))
 async def get_funding_rate():
     """
     https://www.gate.io/docs/developers/apiv4/#list-all-futures-contracts

@@ -18,7 +18,7 @@ class FundingRate:
 BASE_URL = "https://api.bybit.com"
 
 
-@retry(catch_exceptions=(TransportError,))
+@retry(catch=(TransportError,))
 async def get_funding_rate():
     """
     https://bybit-exchange.github.io/docs/v5/market/tickers

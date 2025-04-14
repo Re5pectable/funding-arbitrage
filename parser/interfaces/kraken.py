@@ -16,7 +16,7 @@ class FundingRate:
 BASE_URL = "https://futures.kraken.com/derivatives"
 
 
-@retry(catch_exceptions=(TransportError,))
+@retry(catch=(TransportError,))
 async def get_funding_rate():
     """
     https://docs.kraken.com/api/docs/futures-api/trading/get-tickers

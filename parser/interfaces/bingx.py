@@ -16,7 +16,7 @@ class FundingRate:
 
 BASE_URL = "https://open-api.bingx.com"
 
-@retry(catch_exceptions=(TransportError,))
+@retry(catch=(TransportError,))
 async def get_funding_rate():
     """
     https://bingx-api.github.io/docs/#/en-us/swapV2/market-api.html#Get%20Funding%20Rate%20History

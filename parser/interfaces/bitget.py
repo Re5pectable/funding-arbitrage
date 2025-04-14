@@ -16,7 +16,7 @@ class FundingRate:
     lastPrice: Decimal
 
 
-@retry(catch_exceptions=(TransportError,))
+@retry(catch=(TransportError,))
 async def get_funding_rate():
     """
     https://www.bitget.com/api-doc/contract/market/Get-All-Symbol-Ticker
