@@ -4,7 +4,8 @@ from decimal import Decimal
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry, errors
+from ..utils import errors, retry
+
 
 @dataclass
 class FundingRate:
@@ -15,6 +16,7 @@ class FundingRate:
 
 
 BASE_URL = "https://open-api.bingx.com"
+
 
 @retry(catch=(TransportError,))
 async def get_funding_rate():
@@ -32,8 +34,7 @@ async def get_funding_rate():
                 symbol=row["symbol"],
                 fundingRate=Decimal(row["lastFundingRate"]),
                 lastPrice=Decimal(row["markPrice"]),
-                nextFundingTime=datetime.fromtimestamp(row["nextFundingTime"] / 1000)
+                nextFundingTime=datetime.fromtimestamp(row["nextFundingTime"] / 1000),
             )
             for row in response.json()["data"]
         ]
-    

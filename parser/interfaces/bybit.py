@@ -15,51 +15,60 @@ class FundingRate:
     lastPrice: Decimal
 
 
+@dataclass
+class Order:
+    price: Decimal
+    size: Decimal
+
+
+@dataclass
+class OrderBook:
+    bids: list[Order]
+    asks: list[Order]
+
+
 BASE_URL = "https://api.bybit.com"
 
 
 @retry(catch=(TransportError,))
+async def _request(method: str, uri: str, params=None):
+    endpoint = "https://api.bybit.com" + uri
+    async with AsyncClient() as c:
+        response = await c.request(method, endpoint, params=params)
+        if response.status_code != 200:
+            raise errors.ExchangeAPICallException(response.text)
+        return response
+
+
 async def get_funding_rate():
     """
     https://bybit-exchange.github.io/docs/v5/market/tickers
     """
-
-    endpoint = BASE_URL + "/v5/market/tickers"
-    params = {"category": "linear"}
-    async with AsyncClient() as c:
-        response = await c.get(endpoint, params=params)
-        if response.status_code != 200:
-            raise errors.ExchangeAPICallException(response.text)
-        return [
-            FundingRate(
-                symbol=row["symbol"],
-                fundingRate=Decimal(row["fundingRate"]),
-                nextFundingTime=datetime.fromtimestamp(
-                    int(row["nextFundingTime"]) / 1000
-                ),
-                lastPrice=Decimal(row["lastPrice"]),
-            )
-            for row in response.json()["result"]["list"]
-            if row["fundingRate"]
-        ]
+    response = await _request("GET", "/v5/market/tickers", {"category": "linear"})
+    return [
+        FundingRate(
+            symbol=row["symbol"],
+            fundingRate=Decimal(row["fundingRate"]),
+            nextFundingTime=datetime.fromtimestamp(int(row["nextFundingTime"]) / 1000),
+            lastPrice=Decimal(row["lastPrice"]),
+        )
+        for row in response.json()["result"]["list"]
+        if row["fundingRate"]
+    ]
 
 
+@retry(catch=(TransportError,))
 async def get_orderbook(symbol: str):
     """
     https://bybit-exchange.github.io/docs/v5/market/orderbook
     """
-    return {
-        "retCode": 0,
-        "retMsg": "OK",
-        "result": {
-            "s": "BTCUSDT",
-            "a": [["65557.7", "16.606555"]],
-            "b": [["65485.47", "47.081829"]],
-            "ts": 1716863719031,
-            "u": 230704,
-            "seq": 1432604333,
-            "cts": 1716863718905,
-        },
-        "retExtInfo": {},
-        "time": 1716863719382,
-    }
+    response = await _request(
+        "GET",
+        "/v5/market/orderbook",
+        {"category": "linear", "symbol": symbol, "limit": 100},
+    )
+    data = response.json()["result"]
+    return OrderBook(
+        bids=[Order(Decimal(price), Decimal(size)) for price, size in data["b"]],
+        asks=[Order(Decimal(price), Decimal(size)) for price, size in data["a"]],
+    )

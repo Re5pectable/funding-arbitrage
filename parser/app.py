@@ -1,7 +1,6 @@
 import asyncio
 from dataclasses import asdict
 from decimal import Decimal
-from pprint import pprint
 
 import pandas as pd
 
@@ -28,7 +27,7 @@ async def _gather_binance(mock=False):
     return df[["id", "lastPrice", "fundingRate", "nextFundingTime", "symbol"]]
 
 
-async def _gather_bingx():
+async def _gather_bingx(mock=False):
     data = await bingx.get_funding_rate()
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
@@ -87,7 +86,7 @@ async def main():
     df = pd.concat(dfs, axis=0, ignore_index=True).reset_index()
     df = df[columns]
 
-    r = find_diff(df, threshold=Decimal("0.005"), max_hours_diff=1)
+    r = find_diff(df, threshold=Decimal("0.003"), max_hours_diff=1)
     print(r)
     indexes = r[["index_a", "index_b"]].values.ravel()
     print(df[df.index.isin(indexes)])
