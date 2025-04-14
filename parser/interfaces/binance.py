@@ -15,7 +15,6 @@ class FundingRate:
     lastPrice: Decimal
     indexPrice: Decimal
     estimatedSettlePrice: Decimal
-    lastFundingRate: Decimal
     fundingRate: Decimal
     nextFundingTime: datetime
 
@@ -36,8 +35,7 @@ async def get_funding_rate() -> list[FundingRate]:
                 lastPrice=Decimal(row["markPrice"]),
                 indexPrice=Decimal(row["indexPrice"]),
                 estimatedSettlePrice=Decimal(row["estimatedSettlePrice"]),
-                lastFundingRate=Decimal(row["lastFundingRate"]),
-                fundingRate=Decimal(row["interestRate"]),
+                fundingRate=Decimal(row["lastFundingRate"]),
                 nextFundingTime=datetime.fromtimestamp(row["nextFundingTime"] / 1000),
             )
             for row in response.json()
