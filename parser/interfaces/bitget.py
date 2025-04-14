@@ -4,7 +4,7 @@ from datetime import datetime
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry
+from ..utils import retry, errors
 
 BASE_URL = "https://api.bitget.com"
 
@@ -27,7 +27,7 @@ async def get_funding_rate():
     async with AsyncClient() as c:
         response = await c.get(endpoint, params=params)
         if response.status_code != 200:
-            raise ValueError(response.text)
+            raise errors.ExchangeAPICallException(response.text)
         return [
             FundingRate(
                 symbol=row["symbol"],
@@ -46,7 +46,7 @@ async def get_next_funding_time(symbol: str):
     async with AsyncClient() as c:
         response = await c.get(endpoint, params=params)
         if response.status_code != 200:
-            raise ValueError(response.text)
+            raise errors.ExchangeAPICallException(response.text)
         nft = response.json()["data"][0]["nextFundingTime"]
         return datetime.fromtimestamp(int(nft) / 1000)
         

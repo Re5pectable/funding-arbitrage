@@ -5,7 +5,7 @@ from time import time
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry
+from ..utils import retry, errors
 
 
 @dataclass
@@ -30,7 +30,7 @@ async def get_funding_rate():
         now = time()
         response = await c.get(endpoint)
         if response.status_code != 200:
-            raise ValueError(response.text)
+            raise errors.ExchangeAPICallException(response.text)
         return [
             FundingRate(
                 symbol=row["baseCurrency"] + row["quoteCurrency"],

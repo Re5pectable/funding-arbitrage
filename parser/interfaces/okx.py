@@ -1,5 +1,7 @@
 from httpx import AsyncClient, TransportError
 
+from ..utils import errors
+
 BASE_URL = "https://www.okx.com/"
 
 # не нашел способа достать bulk
@@ -13,5 +15,5 @@ async def get_funding_rate(instrument_id: str):
     async with AsyncClient() as c:
         response = await c.get(endpoint, params=params)
         if response.status_code != 200:
-            raise ValueError(response.text)
+            raise errors.ExchangeAPICallException(response.text)
         return response.json()

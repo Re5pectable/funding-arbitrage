@@ -1,0 +1,2 @@
+class ExchangeAPICallException(Exception):
+    pass

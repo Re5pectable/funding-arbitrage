@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry
+from ..utils import retry, errors, errors
 
 FBASE_URL = "https://fapi.binance.com"
 
@@ -29,7 +29,7 @@ async def get_funding_rate() -> list[FundingRate]:
     async with AsyncClient() as c:
         response = await c.get(endpoint)
         if response.status_code != 200:
-            raise ValueError(response.text)
+            raise errors.ExchangeAPICallException(response.text)
         return [
             FundingRate(
                 symbol=row["symbol"],
@@ -48,6 +48,12 @@ async def get_order_book(symbol: str):
     """
     https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Order-Book
     """
+    endpoint = FBASE_URL + "/fapi/v1/depth"
+    async with AsyncClient() as c:
+        response = await c.get(endpoint)
+        if response.status_code != 200:
+            raise errors.ExchangeAPICallException(response.text)
+        return response.json()
     return {
         "lastUpdateId": 1027024,
         "E": 1589436922972,
