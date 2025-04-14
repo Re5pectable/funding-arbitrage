@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry, errors
+from ..utils import retry, errors, OrderBook, Order
 
 
 @dataclass
@@ -13,21 +13,6 @@ class FundingRate:
     fundingRate: Decimal
     nextFundingTime: datetime
     lastPrice: Decimal
-
-
-@dataclass
-class Order:
-    price: Decimal
-    size: Decimal
-
-
-@dataclass
-class OrderBook:
-    bids: list[Order]
-    asks: list[Order]
-
-
-BASE_URL = "https://api.bybit.com"
 
 
 @retry(catch=(TransportError,))
@@ -57,7 +42,6 @@ async def get_funding_rate():
     ]
 
 
-@retry(catch=(TransportError,))
 async def get_orderbook(symbol: str):
     """
     https://bybit-exchange.github.io/docs/v5/market/orderbook

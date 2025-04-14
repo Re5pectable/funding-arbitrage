@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry, errors
+from ..utils import retry, errors, OrderBook, Order
 
 
 @dataclass
@@ -13,18 +13,6 @@ class FundingRate:
     fundingRate: Decimal
     nextFundingTime: datetime
     lastPrice: Decimal
-
-
-@dataclass
-class Order:
-    price: Decimal
-    size: Decimal
-
-
-@dataclass
-class OrderBook:
-    bids: list[Order]
-    asks: list[Order]
 
 
 @retry(catch=(TransportError,))

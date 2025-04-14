@@ -16,7 +16,7 @@ from .interfaces import (  # noqa: F401
     bingx,
 )
 from .test_data import test_data
-from .utils import find_diff, fix_decimals_in_symbols
+from .utils import find_diff, fix_decimals_in_symbols, avg_orderbook_price
 
 
 async def _gather_binance(mock=False):
@@ -76,17 +76,55 @@ async def main():
         ("bybit", _gather_bybit),
         ("gateio", _gather_gateio),
         ("kucoin", _gather_kucoin),
-        ("bingx", _gather_bingx),
+        # ("bingx", _gather_bingx),
     ]
 
-    results: list[pd.DataFrame] = await asyncio.gather(*[func(mock=False) for _, func in gather_tasks])
+    results: list[pd.DataFrame] = await asyncio.gather(
+        *[func(mock=False) for _, func in gather_tasks]
+    )
     dfs = [
         result.assign(exchange=name) for (name, _), result in zip(gather_tasks, results)
     ]
     df = pd.concat(dfs, axis=0, ignore_index=True).reset_index()
     df = df[columns]
 
-    r = find_diff(df, threshold=Decimal("0.003"), max_hours_diff=1)
+    r = find_diff(df)
+    print("-" * 100)
     print(r)
+    print("-" * 100, '\n')
+    gap = r.loc[(r["price_diff"] > 1.01) | (r["price_diff"] < 0.99)]
+    print(gap)
+    return
     indexes = r[["index_a", "index_b"]].values.ravel()
-    print(df[df.index.isin(indexes)])
+
+    orderbooks = {
+        row["index"]: {
+            "exchange": row["exchange"],
+            "symbol": row["symbol"],
+        }
+        for row in df[df.index.isin(indexes)][["symbol", "index", "exchange"]].to_dict(
+            "records"
+        )
+    }
+    exch_map = {
+        "binance": binance,
+        "bybit": bybit,
+        "gateio": gateio,
+        "kucoin": kucoin
+    }
+    for key in orderbooks.keys():
+        exchange = orderbooks[key]["exchange"]
+        symbol = orderbooks[key]["symbol"]
+        orderbooks[key]["orderbook"] = await exch_map[exchange].get_orderbook(symbol)
+        
+    print(r.columns)
+        
+    # df["100usd_a"] = 
+    
+    # df = df.apply()
+    # print("BIDS", bids)
+    # print("ASKS", asks)
+    
+    # print(avg_orderbook_price(orderbooks[first_symbol]["orderbook"], 100, "buy"))
+
+    # pprint(orderbooks)

@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry, errors
+from ..utils import retry, errors, OrderBook, Order
 
 
 @dataclass
@@ -13,17 +13,6 @@ class FundingRate:
     fundingRate: Decimal
     nextFundingTime: datetime
     lastPrice: Decimal
-    
-@dataclass
-class Order:
-    price: Decimal
-    size: Decimal
-
-
-@dataclass
-class OrderBook:
-    bids: list[Order]
-    asks: list[Order]
 
 
 @retry(catch=(TransportError,))
@@ -48,12 +37,13 @@ async def get_funding_rate():
             lastPrice=Decimal(str(row["markPrice"])),
             fundingRate=Decimal(str(row["fundingFeeRate"])),
             nextFundingTime=datetime.fromtimestamp(
-                (row["nextFundingRateTime"] + now) / 1000
+                (row["nextFundingRateTime"] / 1000 + now)
             ),
         )
         for row in response.json()["data"]
         if row["fundingFeeRate"]
     ]
+
 
 async def get_orderbook(symbol: str):
     """
@@ -61,10 +51,13 @@ async def get_orderbook(symbol: str):
     """
     response = await _request("GET", "/api/v1/level2/depth100", {"symbol": symbol})
     data = response.json()["data"]
-    
     return OrderBook(
-        bids=[Order(Decimal(str(price)), Decimal(str(size))) for price, size in data["bids"]],
-        asks=[Order(Decimal(str(price)), Decimal(str(size))) for price, size in data["asks"]],
+        bids=[
+            Order(Decimal(str(price)), Decimal(str(size)))
+            for price, size in data["bids"]
+        ],
+        asks=[
+            Order(Decimal(str(price)), Decimal(str(size)))
+            for price, size in data["asks"]
+        ],
     )
-
-    
