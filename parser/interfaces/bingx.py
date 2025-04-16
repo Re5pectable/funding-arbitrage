@@ -5,7 +5,7 @@ from typing import List
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import errors, retry
+from ..utils import retry, errors, OrderBook, Order
 
 
 @dataclass
@@ -14,18 +14,6 @@ class FundingRate:
     fundingRate: Decimal
     nextFundingTime: datetime
     lastPrice: Decimal
-
-@dataclass
-class Order:
-    price: Decimal
-    amount: Decimal
-
-@dataclass
-class OrderBook:
-    symbol: str
-    bids: List[Order]
-    asks: List[Order]
-
 
 BASE_URL = "https://open-api.bingx.com"
 
