@@ -1,9 +1,8 @@
 import re
 from decimal import Decimal
 from typing import Literal
-from pprint import pprint
-from pandas import DataFrame, Series, concat, merge, to_datetime
-from time import time
+from pandas import DataFrame, Series, concat
+from .entities import OrderBook
 
 
 SYMBOL_DECIMALS_PATTERN = re.compile(r"^(10+)(.*)$")
@@ -19,57 +18,57 @@ def fix_decimals_in_symbols(row: Series):
 
     return row
 
-def find_diff(
-    df: DataFrame,
-    threshold: Decimal = Decimal("0.001"),
-    max_hours_diff: int = 4
-) -> DataFrame:
-    df = df.copy()
-    max_seconds_diff = max_hours_diff * 3600
 
+def find_diff(df: DataFrame) -> DataFrame:
+    # df = df.copy()
     result_rows = []
 
     for id_, group in df.groupby("id"):
         if len(group) < 2:
             continue
-        
+
         merged = group.merge(group, how="cross", suffixes=("_a", "_b"))
         merged = merged[merged["exchange_a"] < merged["exchange_b"]]
 
-        merged["fundingRate_diff"] = (merged["fundingRate_a"] - merged["fundingRate_b"]).abs()
-        merged["time_diff_seconds"] = (merged["nextFundingTime_a"] - merged["nextFundingTime_b"]).abs().dt.total_seconds()
-
-        mask = (merged["fundingRate_diff"] > threshold) & (merged["time_diff_seconds"] <= max_seconds_diff)
-        result_rows.append(merged[mask])
+        merged["fundingRate_diff"] = (
+            merged["fundingRate_a"] - merged["fundingRate_b"]
+        ).abs()
+        merged["price_diff"] = merged["lastPrice_a"] / merged["lastPrice_b"]
+        merged["time_diff_seconds"] = (
+            (merged["nextFundingTime_a"] - merged["nextFundingTime_b"])
+            .abs()
+            .dt.total_seconds()
+        )
+        result_rows.append(merged)
 
     if result_rows:
         return concat(result_rows, ignore_index=True)
 
 
-
-def calculate_average_price_from_book(
-    bids: list[list[float]],
-    asks: list[list[float]],
+def avg_orderbook_price(
+    orderbook: OrderBook,
     amount: float,
     side: Literal["buy", "sell"],
 ) -> float:
-    orderbook = asks if side == "buy" else bids
     reverse = side == "sell"
-    book = sorted(orderbook, key=lambda x: Decimal(str(x[0])), reverse=reverse)
+    book = sorted(
+        orderbook.asks if side == "buy" else orderbook.bids,
+        key=lambda x: x.price,
+        reverse=reverse,
+    )
 
     remaining = Decimal(str(amount))
     total_cost = Decimal("0")
 
-    for price_str, qty_str in book:
-        price = Decimal(str(price_str))
-        qty = Decimal(str(qty_str))
-
-        if remaining <= qty:
-            total_cost += remaining * price
+    for row in book:
+        print(row)
+        if remaining <= row.size:
+            total_cost += remaining * row.price
+            remaining = 0
             break
         else:
-            total_cost += qty * price
-            remaining -= qty
+            total_cost += row.size * row.price
+            remaining -= row.size
 
     if remaining > 0:
         raise ValueError("Not enough liquidity to fulfill the order")

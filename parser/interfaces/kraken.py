@@ -1,24 +1,22 @@
 from dataclasses import dataclass
-from datetime import datetime
 from decimal import Decimal
 
 from httpx import AsyncClient, TransportError
 
-from ..utils import retry
+from ..utils import retry, errors
 
 
 @dataclass
 class FundingRate:
     symbol: str
     fundingRate: Decimal
-    # nextFundingTime: datetime
     lastPrice: Decimal
 
 
 BASE_URL = "https://futures.kraken.com/derivatives"
 
 
-@retry(catch_exceptions=(TransportError,))
+@retry(catch=(TransportError,))
 async def get_funding_rate():
     """
     https://docs.kraken.com/api/docs/futures-api/trading/get-tickers
@@ -29,7 +27,7 @@ async def get_funding_rate():
         params = {"contractType": "futures_vanilla"}
         response = await c.get(endpoint, params=params)
         if response.status_code != 200:
-            raise ValueError(response.text) 
+            raise errors.ExchangeAPICallException(response.text)
         return [
             FundingRate(
                 symbol=row["symbol"],

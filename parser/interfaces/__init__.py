@@ -15,5 +15,5 @@ __all__ = [
     "gateio",
     "bingx",
     "kraken",
-    "kucoin"
+    "kucoin",
 ]
