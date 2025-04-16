@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from typing import List
 
 from httpx import AsyncClient, TransportError
 
@@ -15,12 +16,15 @@ class FundingRate:
     lastPrice: Decimal
 
 @dataclass
-class OrderBook: 
+class Order:
+    price: Decimal
+    amount: Decimal
+
+@dataclass
+class OrderBook:
     symbol: str
-    bestBidPrice: Decimal
-    bestBidQuote: Decimal
-    bestAskPrice: Decimal
-    bestAskQuote: Decimal
+    bids: List[Order]
+    asks: List[Order]
 
 
 BASE_URL = "https://open-api.bingx.com"
@@ -47,8 +51,8 @@ async def get_funding_rate():
             for row in response.json()["data"]
         ]
     
-@retry(catch_exceptions=(TransportError,))
-async def get_orderbook(symbol: str, limit: 5):
+@retry(catch=(TransportError,))
+async def get_orderbook(symbol: str, limit: int = 100):
     """
     https://bingx-api.github.io/docs/#/en-us/swapV2/market-api.html#Order%20Book
     """
@@ -63,14 +67,16 @@ async def get_orderbook(symbol: str, limit: 5):
         if data.get("code") != 0:
             raise ValueError(f"API error: {data.get('msg')}")
         ob_data = data["data"]
-        best_bid = ob_data["bids"][0]
-        best_ask = ob_data["asks"][0]
         return OrderBook(
             symbol=symbol,
-            bestBidPrice=Decimal(best_bid[0]),
-            bestBidQuote=Decimal(best_bid[0])*Decimal(best_bid[1]),
-            bestAskPrice=Decimal(best_ask[0]),
-            bestAskQuote=Decimal(best_ask[0])*Decimal(best_ask[1])
+            bids=[
+                Order(Decimal(str(price)), Decimal(str(size)))
+                for price, size in ob_data["bids"]
+            ],
+            asks=[
+                Order(Decimal(str(price)), Decimal(str(size)))
+                for price, size in ob_data["asks"]
+            ],
         )
 
     
