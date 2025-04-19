@@ -9,9 +9,7 @@ SYMBOL_DECIMALS_PATTERN = re.compile(r"^(10+)(.*)$")
 
 
 def fix_decimals_in_symbols(row: Series):
-    s = row["symbol"]
-    row["symbolOrig"] = s
-    match = SYMBOL_DECIMALS_PATTERN.match(s)
+    match = SYMBOL_DECIMALS_PATTERN.match(row["symbol"])
     if match:
         numeric_prefix_str = match.group(1)
         row["symbol"] = match.group(2)
@@ -70,7 +68,20 @@ def avg_orderbook_price(
             remaining -= row.size
 
     if remaining > 0:
-        raise ValueError("Not enough liquidity to fulfill the order")
+        return None
 
     average_price = total_cost / Decimal(str(amount))
     return float(average_price)
+
+def calculate_avg_price(row: Series, orderbook: dict):
+    for amount in [50, 100, 200, 500]:
+        if row["lastPrice_a"] > row["lastPrice_b"]:
+            avg_sell_a = avg_orderbook_price(orderbook[row["index_a"]]["orderbook"], amount, "sell")
+            avg_buy_b =  avg_orderbook_price(orderbook[row["index_b"]]["orderbook"], amount, "buy")
+            row[f"priceDiff{amount}"] = avg_sell_a / avg_buy_b
+        else:
+            avg_buy_a = avg_orderbook_price(orderbook[row["index_a"]]["orderbook"], amount, "buy")
+            avg_sell_b =  avg_orderbook_price(orderbook[row["index_b"]]["orderbook"], amount, "sell")
+            row[f"priceDiff{amount}"] = avg_sell_b / avg_buy_a
+
+    return row

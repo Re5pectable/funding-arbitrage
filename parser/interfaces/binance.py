@@ -41,7 +41,7 @@ async def get_funding_rate() -> list[FundingRate]:
             fundingRate=Decimal(row["lastFundingRate"]),
             nextFundingTime=datetime.fromtimestamp(row["nextFundingTime"] / 1000),
         )
-        for row in response.json()
+        for row in response.json() if float(row["estimatedSettlePrice"])
     ]
 
 
