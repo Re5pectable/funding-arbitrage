@@ -10,6 +10,7 @@ SYMBOL_DECIMALS_PATTERN = re.compile(r"^(10+)(.*)$")
 
 def fix_decimals_in_symbols(row: Series):
     s = row["symbol"]
+    row["symbolOrig"] = s
     match = SYMBOL_DECIMALS_PATTERN.match(s)
     if match:
         numeric_prefix_str = match.group(1)
@@ -20,7 +21,6 @@ def fix_decimals_in_symbols(row: Series):
 
 
 def find_diff(df: DataFrame) -> DataFrame:
-    # df = df.copy()
     result_rows = []
 
     for id_, group in df.groupby("id"):

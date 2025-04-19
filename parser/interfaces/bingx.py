@@ -56,7 +56,6 @@ async def get_orderbook(symbol: str, limit: int = 100):
             raise ValueError(f"API error: {data.get('msg')}")
         ob_data = data["data"]
         return OrderBook(
-            symbol=symbol,
             bids=[
                 Order(Decimal(str(price)), Decimal(str(size)))
                 for price, size in ob_data["bids"]
