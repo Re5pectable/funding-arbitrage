@@ -48,7 +48,6 @@ async def _gather_gateio(mock=False):
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
     df["id"] = df["symbol"].str[:-5] + df["symbol"].str[-4:]
-    print(df["id"])
     return df
 
 
@@ -57,7 +56,6 @@ async def _gather_kucoin(mock=False):
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
     df["id"] = df["symbol"].str[:-1]
-    print(df["id"])
     return df
 
 
@@ -93,7 +91,7 @@ async def main():
 
     r = find_diff(df)
     print("-" * 100, '\n')
-    gap = r.loc[(r["price_diff"] > 1.02) | (r["price_diff"] < 0.98)]
+    gap = r.loc[(r["price_diff"] > 1.01) | (r["price_diff"] < 0.99)]
     print(gap[["id_a", "exchange_a", "exchange_b", "lastPrice_a", "lastPrice_b", "price_diff", "fundingRate_diff"]])
 
     indexes = gap[["index_a", "index_b"]].values.ravel()
@@ -115,7 +113,7 @@ async def main():
         "kucoin": kucoin,
         "bingx": bingx
     }
-    
+
     async def task(key):
         await asyncio.sleep(uniform(0,4))
         exchange = orderbooks[key]["exchange"]
@@ -127,5 +125,10 @@ async def main():
             print(key, exchange, symbol, "failed", e)
 
     await asyncio.gather(*[task(key) for key in orderbooks.keys()])
+
+    orderbooks_df = pd.DataFrame(orderbooks).T
+    print(orderbooks_df)
+    gap['optimal_order_size'] = gap.apply(lambda row: calculate_arbitrage_order_size(row, orderbooks_df), axis=1)
+    print("gap", gap)
 
 

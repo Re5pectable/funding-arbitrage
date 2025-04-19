@@ -44,7 +44,6 @@ def find_diff(df: DataFrame) -> DataFrame:
     if result_rows:
         return concat(result_rows, ignore_index=True)
 
-
 def avg_orderbook_price(
     orderbook: OrderBook,
     amount: float,
