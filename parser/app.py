@@ -48,6 +48,7 @@ async def _gather_gateio(mock=False):
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
     df["id"] = df["symbol"].str[:-5] + df["symbol"].str[-4:]
+    print(df["id"])
     return df
 
 
@@ -55,7 +56,8 @@ async def _gather_kucoin(mock=False):
     data = await kucoin.get_funding_rate() if not mock else test_data.GATEIO_FUNDRATE
     df = pd.DataFrame([asdict(row) for row in data])
     df = df.apply(fix_decimals_in_symbols, axis=1)
-    df["id"] = df["symbol"]
+    df["id"] = df["symbol"].str[:-1]
+    print(df["id"])
     return df
 
 

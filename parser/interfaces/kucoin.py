@@ -33,7 +33,7 @@ async def get_funding_rate():
     response = await _request("GET", "/api/v1/contracts/active")
     return [
         FundingRate(
-            symbol=row["baseCurrency"] + row["quoteCurrency"],
+            symbol=row["symbol"],
             lastPrice=Decimal(str(row["markPrice"])),
             fundingRate=Decimal(str(row["fundingFeeRate"])),
             nextFundingTime=datetime.fromtimestamp(
